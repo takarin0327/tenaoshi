@@ -137,16 +137,18 @@ body {
     }
 
     function initClient() {
-        gapi.client.init({
-            apiKey: 'AIzaSyBtMDqgVke-2Ji_q5HNqXJc3KF6lZeIVX4', // 正しいAPIキーに置き換えてください
-            clientId: '942349803399-hsn4kv18se755b6id4s73cpb6l82ut1b.apps.googleusercontent.com', // 正しいクライアントIDに置き換えてください
-            scope: 'https://www.googleapis.com/auth/spreadsheets.readonly',
-            discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
-        }).then(function () {
-            console.log("Google API client initialized.");
-            loadOptions();
-        }).catch(function(error) {
-            console.error('Error initializing Google API client: ' + error);
+        gapi.load('client:auth2', function() {
+            gapi.auth2.init({client_id: '942349803399-hsn4kv18se755b6id4s73cpb6l82ut1b.apps.googleusercontent.com'}).then(function(){
+                gapi.client.init({
+                    apiKey: 'AIzaSyBtMDqgVke-2Ji_q5HNqXJc3KF6lZeIVX4',
+                    clientId: '942349803399-hsn4kv18se755b6id4s73cpb6l82ut1b.apps.googleusercontent.com',
+                    scope: 'https://www.googleapis.com/auth/spreadsheets.readonly',
+                    discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+                }).then(function () {
+                    console.log("Google API client initialized.");
+                    loadOptions();
+                });
+            });
         });
     }
 
