@@ -138,15 +138,17 @@ body {
 
     function initClient() {
         gapi.load('client:auth2', function() {
-            gapi.auth2.init({client_id: '942349803399-hsn4kv18se755b6id4s73cpb6l82ut1b.apps.googleusercontent.com'}).then(function(){
+            gapi.auth2.init({client_id: '942349803399-pcvmf9ma5aqmimh7et6ledu36d8a8783.apps.googleusercontent.com'}).then(function(){
                 gapi.client.init({
                     apiKey: 'AIzaSyBtMDqgVke-2Ji_q5HNqXJc3KF6lZeIVX4',
-                    clientId: '942349803399-hsn4kv18se755b6id4s73cpb6l82ut1b.apps.googleusercontent.com',
+                    clientId: '942349803399-pcvmf9ma5aqmimh7et6ledu36d8a8783.apps.googleusercontent.com',
                     scope: 'https://www.googleapis.com/auth/spreadsheets.readonly',
                     discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
                 }).then(function () {
                     console.log("Google API client initialized.");
                     loadOptions();
+                }).catch(function(error) {
+                    console.error('Error initializing Google API client:', error);
                 });
             });
         });
