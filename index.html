@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <title>手直し登録</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- BootstrapなどのCDN読み込みは省略可 -->
 </head>
 <body>
   <div class="header-title">手直し登録</div>
@@ -34,7 +33,6 @@
     <p class="mt-3 mb-0 form-label">納品備考</p>
     <p class="mb-0">納品数が指定数ではない場合の理由をお選びください。</p>
     <div>
-      <!-- value="その他" が選択されたらテキストボックス表示 -->
       <label><input type="radio" name="deliveryReason" value="体調不良"> 体調不良</label>
       <label><input type="radio" name="deliveryReason" value="初期不良"> 初期不良</label>
       <label><input type="radio" name="deliveryReason" value="その他"> その他</label>
@@ -53,14 +51,12 @@
       <input class="form-control w-100 mt-1" name="fixPoints" required>
     </div>
 
-    <!-- 画像などのアップロード (今回は割愛します) -->
-    <!--<p class="mt-3 mb-0 form-label">ファイルアップロード</p>-->
-
     <input type="submit" class="mt-4 btn btn-primary" value="送信">
   </form>
 
-  <!-- jQueryなどの読み込み -->
+  <!-- jQuery読み込み -->
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <!-- LIFF SDK読み込み -->
   <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
 
   <script>
@@ -68,8 +64,8 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxY1ElzkpQm0g7AgcOssY_4ZF0jO-yW41tkudjneh-8f6nwayd2r96eMMq3LGc7SVbpFg/exec";
 
     $(document).ready(function () {
-      // LIFF初期化
-      const liffId = "2005926419-8YQOpOqd";  // 例
+      // -- LIFF初期化 --
+      const liffId = "2005926419-8YQOpOqd";  // あなたのLIFF ID
       liff.init({ liffId: liffId })
           .then(() => {
             console.log("LIFF init success");
@@ -91,55 +87,40 @@
       $('#myForm').submit(function (e) {
         e.preventDefault();
 
-        // フォーム入力値を取得
-        const workerName    = $('input[name="workerName"]').val();
-        const inspectorName = $('input[name="inspectorName"]').val();
-        const fixCount      = $('input[name="fixCount"]').val();
-        const deliveryCount = $('input[name="deliveryCount"]').val();
-        const defectCount   = $('input[name="defectCount"]').val();
-        const ngCount       = $('input[name="ngCount"]').val();
-        const fixPoints     = $('input[name="fixPoints"]').val();
+        // $(this).serialize() で form 要素の name/value を
+        // "workerName=xxx&inspectorName=xxx..." の形式に整形
+        const formData = $(this).serialize();
 
-        // 納品備考（ラジオ + その他）
-        let deliveryReason = $('input[name="deliveryReason"]:checked').val();
-        if (deliveryReason === 'その他') {
-          const otherContent = $('input[name="other_content"]').val();
-          if (otherContent) {
-            deliveryReason = otherContent;
-          }
-        }
-
-        // Apps Script へPOSTするデータをまとめる
-        const postData = {
-          workerName: workerName,
-          inspectorName: inspectorName,
-          fixCount: fixCount,
-          deliveryCount: deliveryCount,
-          defectCount: defectCount,
-          deliveryReason: deliveryReason || "", // 未選択なら空文字にしておく
-          ngCount: ngCount,
-          fixPoints: fixPoints
-        };
-
-        // fetch で Apps Script へデータを送信
-        fetch(GAS_URL, {
+        // jQueryのAjaxで "application/x-www-form-urlencoded" 形式で送信
+        $.ajax({
+          url: GAS_URL,
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(postData)
-        })
-        .then(response => response.json())
-        .then(data => {
-          console.log("Success:", data);
-          if (data.status === "success") {
-            // LINEにメッセージを送る例（不要なら削除）
-            sendText("手直し登録が完了しました。");
-          } else {
-            alert("エラーが発生しました：" + data.message);
+          data: formData,
+          // jQueryはデフォルトで contentType: application/x-www-form-urlencoded になる
+          // もし明示したい場合は:
+          // contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+          success: function(data) {
+            console.log("Success:", data);
+            // data は Apps Script からのレスポンス（JSON文字列）かもしれません
+            // 文字列の場合 JSON.parse(data) でパースできます
+            if (typeof data === 'string') {
+              try {
+                data = JSON.parse(data);
+              } catch (e) {
+                console.warn("JSONとしてパース不可:", e);
+              }
+            }
+            if (data.status === "success") {
+              // LINEにメッセージを送る例（不要なら削除）
+              sendText("手直し登録が完了しました。");
+            } else {
+              alert("エラーが発生しました：" + data.message);
+            }
+          },
+          error: function(error) {
+            console.error("Error:", error);
+            alert("エラーが発生しました: " + error);
           }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          alert("エラーが発生しました: " + error);
         });
       });
     });
